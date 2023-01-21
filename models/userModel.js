@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: 8,
-    select: false,
+    select: false, //! response'ta gösterimi engeller
   },
   passwordConfirm: {
     type: String,
@@ -40,7 +40,12 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  active : {
+    type : Boolean,
+    default : true,
+    select: false
+  }
 });
 
 userSchema.pre('save' , function(next){
@@ -66,6 +71,12 @@ userSchema.pre('save', async function(next){
     this.passwordConfirm = undefined; //! kullanıcı DB'ye kaydolurken confirm verisini sildik sadece ilk giriste kontrol etsin DB'ye eklemesin istedik.
 
     next();
+})
+
+userSchema.pre( /^find/ , function(next){
+  // this points to the current query
+  this.find({active: {$ne: false}});
+  next()
 })
 
 //! instance method tüm collection'da gecerli olur
