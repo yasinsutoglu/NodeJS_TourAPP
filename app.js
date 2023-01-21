@@ -1,6 +1,11 @@
-
+const rateLimit = require('express-rate-limit');
 const express = require('express');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp')
+
 // const fs = require('fs')
 const AppError = require('./utils/appError');//? error middleware icin yazdıgımız class'ı import ettik
 const globalErrorHandler = require('./controllers/errorController')
@@ -11,19 +16,47 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express(); //! express.js'i aktif ederek uygulamayı express ile yazamaya devam ederiz.
 
+// 1) GLOBAL MIDDLEWARES
+//Set Security http headers--> middleware stack'te basta olmalıdır.
+app.use(helmet());
+
 //!3rd Party Middleware kullanımı (morgan--> popular for logging the request actions from clients)               Orn Sonuc: GET /api/v1/tours 200 4.795 ms - 8683
+//Development logging
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan('dev'))
 }
 
+//? limiter --> middleware func.
+const limiter = rateLimit({
+    max : 100,
+    windowMs:60 * 60 * 1000, //* 1 hour'luk zaman dilimi msec olarak.
+    message : 'Too many request from this IP, please try again in an hour!'
+})
+app.use('/api', limiter) //? "/api" ile baslayan tüm route'ları ilgilendiren request sayısını limitledik 
+
+
 //? burada express.json() middleware'dir. app.use() icine yazılan fonksiyon'lar middleware stack'e atılır.
-app.use(express.json()) 
+//Body parser, reading data from body into req.body
+app.use(express.json({limit : '10kb'})) 
+
+//Data Sanitization against NOSQL query injection
+app.use(mongoSanitize());//* malicious nosql injection code'a karsı koruma
+
+//Data Sanitization against XSS
+app.use(xss()); //* malicious html code'a karsı koruma
+
+//Prevent parameter pollution
+app.use(hpp({
+    whitelist:['duration', 'ratingsQuantitiy', 'ratingsAverage', 'maxGroupSize', 'difficulty', 'price']
+}))
 
 //? static file'lara ulasmak icin built-in middleware kullandık. uygulamayı canlıya alınca IP address public klasorunu baz alır ve icindeki html sayfalarını "http://127.0.0.1:3000/overview.html" seklinde acarız. "http://127.0.0.1:3000/img/pin.png" --> public altındaki img klasorunden png dosyası actık.
+//Serving static files
 app.use(express.static(`${__dirname}/public`))
 
 //? KENDI MIDDLEWARE'IMIZI YAZALIM
 //* next parametresini kullanmak client'a donus yapmak icin cok onemlidir. Bu middleware her tur request'e cevap verir.Cunku bu durumda middleware stack'te en ondedir.(crud islemleri icin yazdıgımız fonk.lar da birer middleware)
+//Test Middleware
 // app.use((req,res,next)=>{
 //     console.log('hello from the middleware');
 //     next()
