@@ -13,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController')
 //? Router Dosyalarını ayırdıktan sonra import etme durumumuz
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes')
 
 const app = express(); //! express.js'i aktif ederek uygulamayı express ile yazamaya devam ederiz.
 
@@ -257,6 +258,8 @@ app.use('/api/v1/users', userRouter);
 
 // app.route('/api/v1/users').get(getAllUsers).post(createUser)
 // app.route('/api/v1/users/:id').get(getUser).patch(updateUser).delete(deleteUser)
+
+app.use('/api/v1/reviews' , reviewRouter)
 
 //! diger route'lar dısında route gelirse client'a ne doneriz?? all: all the verbs for CRUD. Bu handler function en sonda yazılmalı hata alınmaması icin.
 app.all('*', (req, res , next)=>{
