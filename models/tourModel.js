@@ -1,5 +1,6 @@
 const mongoose = require('mongoose'); //mongoDB driver modulunu import ettik.
 const slugify = require('slugify');
+// const User = require('./userModel') --> embedding'te kullanırken yazdık referencing icin gerek yok
 // const validator = require('validator');
 
 //! DB document schema tanımladık bundan yararlanılarak model olusturulur.
@@ -81,6 +82,35 @@ const tourSchema = new mongoose.Schema(
     },
     startDates: [Date], //! mongoDB girdigimiz herhangibir tarihi date formatına otomatik cevirir.
     secretTour: { type: Boolean, default: false },
+    startLocation: {
+      // GeoJSON is used to modify geospatial data
+      type : {
+        type:String,
+        default:'Point', // also can be specified lines,polygons etc...
+        enum:['Point']
+      },
+      coordinates: [Number], // we expect that array of numbers- longitude first and latitude second
+      address: String,
+      description : String
+    },
+    //? locations array'i tour icine tanımlayarak embedded documents olusturmus olduk
+    locations:[
+      {
+        type: { type: String, default: 'Point', enum:['Point']},
+        coordinates: [Number],
+        address : String,
+        description : String,
+        day : Number
+      }
+    ],
+    // guides: Array --> embedding icin kullanmıstık
+    //? referencing icin yazdık!
+    guides: [
+      {
+        type : mongoose.Schema.ObjectId ,
+         ref : 'User', // user documents reference gosterildi, import etmeye gerek yok
+      }
+    ]
   },
   //?OPTIONS OBJ.
   {
@@ -106,6 +136,13 @@ tourSchema.pre('save', function(next) {
   next();
 })
 
+//! burayı tour guide'ları embedding ile modellerken yaptık ama referencing ile daha kolay olacagından ona donduk.
+// tourSchema.pre('save' , async function(next){
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises)
+//   next();
+// })
+
 //! this kullanmıyoruz. doc: finished document
 // tourSchema.post('save', function(doc,next){
 //   console.log(doc);
@@ -124,12 +161,24 @@ tourSchema.pre(/^find/ , function(next){
   next();
 })
 
+//!populate('guides) query'si yapılıp getirilen tour'un ilgili guide document'lerini de ekliyor. populate(),  yeni query olusturur performans acısından kullanıma dikkat et!
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt', //select ile bu property'leri query ile getirirken devre dısı bıraktık
+  });
+  
+  next();
+});
+
 //!docs--> query sonucu donen documents object'leri
 tourSchema.post(/^find/, function (docs , next) {
   console.log(`Query took ${Date.now()-this.start} milisecs`)
   console.log(docs)
   next();
 });
+
+
 
 //? AGGREGATION MIDDLEWARE; runs a lot of functions before/after an aggregation happens.
 //*aggregate Hook kullanıldı

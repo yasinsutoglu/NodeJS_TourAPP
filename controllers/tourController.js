@@ -137,7 +137,7 @@ exports.getTour = catchAsync(async (req, res,next) => {
   // }
 
   // try {
-   const tour = await Tour.findById(req.params.id) //! bu method id'ye göre data doner. Promise olarak doner.
+   const tour = await Tour.findById(req.params.id) //! bu method id'ye göre data doner. Promise olarak doner. 
    //Tour.findOne({_id:req.params.id}) --> alternatif kullanım findById'nin.
 
    if(!tour){
