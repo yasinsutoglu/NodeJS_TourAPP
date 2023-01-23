@@ -110,7 +110,7 @@ const tourSchema = new mongoose.Schema(
         type : mongoose.Schema.ObjectId ,
          ref : 'User', // user documents reference gosterildi, import etmeye gerek yok
       }
-    ]
+    ],
   },
   //?OPTIONS OBJ.
   {
@@ -125,6 +125,12 @@ tourSchema.virtual('durationWeeks').get(function(){
   return this.duration / 7;
 })
 
+//! VIRTUAL POPULATE--> child referencing ile database'i sisirmeden herbir tour'un review'larını getirtiyoruz
+tourSchema.virtual('reviews', {
+  ref:'Review',
+  foreignField: 'tour', // tourModel'a gore foreign-->reviewModel, field --> reviewModel'ın tour fieldı
+  localField:'_id'
+})
 
 //? DOCUMENT MIDDLEWARE;  axios.interceptor gibi document ile ilgili event oncesi veya sonrası yapılacak fonksiyonları tanımlamada kullanılabilir.
 //*Runs before .save() and .create() not for update()

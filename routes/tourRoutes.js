@@ -2,7 +2,9 @@ const express=require('express')
 
 //!tourController.js'dan export ettiğimiz tüm fonksiyonlar burada tourController object'ine property olarak geldi.
 const tourController = require('../controllers/tourController');
-const authController = require('../controllers/authController')
+const authController = require('../controllers/authController');
+// const reviewController = require('../controllers/reviewController');
+const reviewRouter = require('./reviewRoutes')
 
 const {
   getAllTours,
@@ -37,5 +39,17 @@ router.route('/monthly-plan/:year').get(getMonthlyPlan);
 // router.route('/').get(getAllTours).post(tourController.checkBody , createTour);
 router.route('/').get(authController.protect, getAllTours).post(createTour);
 router.route('/:id').get(getTour).patch(updateTour).delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), deleteTour);
+
+//?----------------------
+// POST /tour/213asd/reviews --> nested route ornegidir. reviews, tour'un child'ıdır. Aradaki de tourID.
+// GET /tour/213asd/reviews 
+// GET /tour/213asd/reviews/1235kjalhda2
+
+//! mergeParams kullanarak daha sade hale getirecegiz burayı
+// router.route('/:tourId/reviews').post(authController.protect , authController.restrictTo('user'),reviewController.createReview)
+router.use('/:tourId/reviews' , reviewRouter) //! Tekrar MOUNTING ROUTER yaptık.
+
+//?----------------------
+
 
 module.exports = router;
