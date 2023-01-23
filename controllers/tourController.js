@@ -1,10 +1,9 @@
 // const fs = require('fs');
 const Tour = require('../models/tourModel'); //! DB model'i import ettik.
-
 const APIFeatures = require('../utils/apiFeatures'); //! DB filtering,sorting vs işlemleri yaptıgımız class
 const AppError = require('../utils/appError');
-
-const catchAsync = require('../utils/catchAsync')
+const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 //! localden data cekip test etmek amacıyla yazmıstık. DB varkern ihtiyac kalmadı!
 // const tours = JSON.parse(
@@ -159,12 +158,10 @@ exports.getTour = catchAsync(async (req, res,next) => {
   
 });
 
-
-
-
 //?HANDLING CREATE REQUEST
+exports.createTour = factory.createOne(Tour)
 //! burada req(request)==> client'dan server'a gonderilen data(information)'ın hepsini tutar. Express, body data'yı req'te bulundurmaz ona ulasmak icin middleware kullanmak gerekir.
-exports.createTour = catchAsync(async (req, res, next) => {
+// exports.createTour = catchAsync(async (req, res, next) => {
   // console.log(req.body) //! middleware kullanmasak burada object yerine undefined gorurduk
 
   // const newId = tours[tours.length - 1].id + 1;
@@ -207,78 +204,80 @@ exports.createTour = catchAsync(async (req, res, next) => {
   //   })
   // } 
 
-  const newTour = await Tour.create(req.body);
+//   const newTour = await Tour.create(req.body);
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
+//   res.status(201).json({
+//     status: 'success',
+//     data: {
+//       tour: newTour,
+//     },
+//   });
 
-});
+// });
 
 //?HANDLING UPDATE REQUEST
-exports.updateTour = catchAsync(async (req, res, next) => {
-  // if (req.params.id * 1 > tours.length) {
-  //   return res.status(404).json({
-  //     status: 'fail',
-  //     message: 'Invalid Id',
-  //   });
-  // }
-//  try {
-   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new:true, //? yeni object donmesi demek
-    runValidators:true,
-  }) //! promise donen methoddur. ilk parametre id, ikinicisi update edilecek data, ucuncusu options.
+exports.updateTour  = factory.updateOne(Tour)
+// exports.updateTour = catchAsync(async (req, res, next) => {
+//   // if (req.params.id * 1 > tours.length) {
+//   //   return res.status(404).json({
+//   //     status: 'fail',
+//   //     message: 'Invalid Id',
+//   //   });
+//   // }
+// //  try {
+//    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//     new:true, //? yeni object donmesi demek
+//     runValidators:true,
+//   }) //! promise donen methoddur. ilk parametre id, ikinicisi update edilecek data, ucuncusu options.
 
-  if (!tour) {
-    return next(new AppError('No tour found with that ID', 404)); //! burada return kullanmazsak alttaki response'ı da calıstırır.
-  }
+//   if (!tour) {
+//     return next(new AppError('No tour found with that ID', 404)); //! burada return kullanmazsak alttaki response'ı da calıstırır.
+//   }
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour
-    },
-  });
-//  } catch (error) {
-//   res.status(404).json({
-//     status: 'fail',
-//     message: error,
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       tour
+//     },
 //   });
-//  }
+// //  } catch (error) {
+// //   res.status(404).json({
+// //     status: 'fail',
+// //     message: error,
+// //   });
+// //  }
   
-});
+// });
 
 //?HANDLING DELETE REQUEST
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  // if (req.params.id * 1 > tours.length) {
-  //   return res.status(404).json({
-  //     status: 'fail',
-  //     message: 'Invalid Id',
-  //   });
-  // }
-  // try {
-    const tour = await Tour.findByIdAndDelete(req.params.id)
+exports.deleteTour = factory.deleteOne(Tour);
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   // if (req.params.id * 1 > tours.length) {
+//   //   return res.status(404).json({
+//   //     status: 'fail',
+//   //     message: 'Invalid Id',
+//   //   });
+//   // }
+//   // try {
+//     const tour = await Tour.findByIdAndDelete(req.params.id)
 
-    if (!tour) {
-      return next(new AppError('No tour found with that ID', 404)); //! burada return kullanmazsak alttaki response'ı da calıstırır.
-    }
+//     if (!tour) {
+//       return next(new AppError('No tour found with that ID', 404)); //! burada return kullanmazsak alttaki response'ı da calıstırır.
+//     }
 
-    //! 204 --> no content
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
-  // } catch (error) {
-  //    res.status(404).json({
-  //      status: 'fail',
-  //      message: error,
-  //    });
-  // }
+//     //! 204 --> no content
+//     res.status(204).json({
+//       status: 'success',
+//       data: null,
+//     });
+//   // } catch (error) {
+//   //    res.status(404).json({
+//   //      status: 'fail',
+//   //      message: error,
+//   //    });
+//   // }
  
-});
+// });
 
 //? İstatistik olusturmak icin mongoDB aggregate pipeline kullanırız.
 exports.getTourStats = catchAsync(async (req,res,next) =>{

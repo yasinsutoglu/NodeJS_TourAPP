@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync')
-
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) =>{
   const newObj = {}
@@ -27,7 +27,7 @@ exports.getAllUsers = catchAsync(async(req, res, next) => {
 });
 
 
-exports.updateMe =catchAsync(async (req,res,next)=>{
+exports.updateMe = catchAsync(async (req,res,next)=>{
   // 1) create error if user POSTs password data
   if(req.body.password || req.body.passwordConfirm){
     return next(new AppError('This route is not for password updates.Please use  /updateMyPassword.' , 400))
@@ -58,6 +58,7 @@ exports.deleteMe = catchAsync(async(req,res,next) =>{
   })
 })
 
+//! ADMIN CRUD ISSUES ABOUT USERS
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
@@ -72,16 +73,6 @@ exports.getUser = (req, res) => {
   });
 };
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not yet defined',
-  });
-};
-
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not yet defined',
-  });
-};
+//Do NOT update password with this!
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
