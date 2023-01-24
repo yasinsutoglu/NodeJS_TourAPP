@@ -119,6 +119,12 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+//* 1-> ascending order with index in mongoDB accordingto price field. Bunu mongoDB'de query sonucu arama performansını arttırmak amacıyla kullanıyoruz. -1 -> descending order,  Bu index field'ları kullanıcıların en cok query sorgusu yapabilecekleri field'lara gore kurgulanır.
+// tourSchema.index({price: 1})
+tourSchema.index({ price: 1 , ratingsAverage: -1 });
+tourSchema.index({slug:1});
+
+
 //? VIRTUAL; ile database'e işleme yapmadan response kısmında durationWeeks'i client'a gonderebiliyoruz. Kullanıcının ihtiyacı olabilecek birseyi her seferinde convert ile ugrasmasına gerek kalmıyor.
 //? this--> current document'i temsil eder. This kullanmak gerektiginden callback olarak arrow kullanamayız.
 tourSchema.virtual('durationWeeks').get(function(){
