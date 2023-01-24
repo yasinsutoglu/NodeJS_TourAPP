@@ -33,6 +33,12 @@ router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 router.route('/tour-stats').get(getTourStats)
 router.route('/monthly-plan/:year').get(authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'),getMonthlyPlan);
 
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin)
+// /tours-within?distance=23&center=-40,45&unit=mi
+// /tours-within/23/center=-40,45/unit/mi
+
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances)
+
 //? Creating checkBody middleware in tourController and import here
 //? Check if body contains the name and price property
 //? If not, send back 400(bad request) and adding it to the post handler stack

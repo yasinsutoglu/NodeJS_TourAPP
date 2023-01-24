@@ -124,6 +124,7 @@ const tourSchema = new mongoose.Schema(
 // tourSchema.index({price: 1})
 tourSchema.index({ price: 1 , ratingsAverage: -1 });
 tourSchema.index({slug:1});
+tourSchema.index({startLocation: '2dsphere'})
 
 
 //? VIRTUAL; ile database'e işleme yapmadan response kısmında durationWeeks'i client'a gonderebiliyoruz. Kullanıcının ihtiyacı olabilecek birseyi her seferinde convert ile ugrasmasına gerek kalmıyor.
@@ -196,11 +197,13 @@ tourSchema.post(/^find/, function (docs , next) {
 //? AGGREGATION MIDDLEWARE; runs a lot of functions before/after an aggregation happens.
 //*aggregate Hook kullanıldı
 //!this --> aggregation object
-tourSchema.pre('aggregate' , function(next){
-  this.pipeline().unshift({$match:{secretTour:{$ne:true}}}) //* secretTour not equal olan pipeline'dan cıkarıldı.
-  console.log(this.pipeline())
-  next()
-})
+//!bu pipeline geoNear'ın onunde olmaması gerektiğinden kapattık
+// tourSchema.pre('aggregate' , function(next){
+//   this.pipeline().unshift({$match:{secretTour:{$ne:true}}}) //* secretTour not equal olan pipeline'dan cıkarıldı.
+
+//   console.log(this.pipeline())
+//   next()
+// })
 
 
 //! creating model-> model olusturulurken conventional olarak ilk harf büyük olur. model()'ın ilk parametresi modelname, ikinci parametresi schema'dır. Model blueprint gibi dusunulebilir. Bundan document'lar turetilir.
