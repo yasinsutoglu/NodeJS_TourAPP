@@ -1,7 +1,7 @@
 // const fs = require('fs');
 const Tour = require('../models/tourModel'); //! DB model'i import ettik.
-const APIFeatures = require('../utils/apiFeatures'); //! DB filtering,sorting vs işlemleri yaptıgımız class
-const AppError = require('../utils/appError');
+// const APIFeatures = require('../utils/apiFeatures'); //! DB filtering,sorting vs işlemleri yaptıgımız class
+// const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -40,7 +40,9 @@ exports.aliasTopTours = (req,res,next)=>{
   next();
 }
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
+//? GET ALL TOURS
+exports.getAllTours = factory.getAll(Tour)
+//exports.getAllTours = catchAsync(async (req, res, next) => {
   // try {
     //?BUILD QUERY
     //! 1A)Filtering
@@ -91,72 +93,72 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
     //?EXECUTE QUERY
     //*Tour.find() --> Query.prototype object doner ;; req.query--> queryString'dir
-    const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().paginate();
-    const tours = await features.query; //* query.sort().select().skip().limit() gibi oldu simdiye kadar
+    //const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().paginate();
+    //const tours = await features.query; //* query.sort().select().skip().limit() gibi oldu simdiye kadar
 
     //!Alternatif method for filtering but it stands so long format
     // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy')
 
     //?SEND RESPONSE
-    res.status(200).json({
-      status: 'success',
-      requestedAt: req.requestTime,
-      results: tours.length, //? bu satır nice to have
-      //* burada ENVELOPING yaptık.(Jsend data specification kullanarak)
-      data: {
-        // tours: myTours,
-        tours: tours, //!key olan tours --> route'un resource name'i ile aynı olmalı.
-      },
-    });
+    // res.status(200).json({
+    //   status: 'success',
+    //   requestedAt: req.requestTime,
+    //   results: tours.length, //? bu satır nice to have
+    //   //* burada ENVELOPING yaptık.(Jsend data specification kullanarak)
+    //   data: {
+    //     // tours: myTours,
+    //     tours: tours, //!key olan tours --> route'un resource name'i ile aynı olmalı.
+    //   },
+    // });
   // } catch (error) {
   //   res.status(404).json({
   //     status:"fail",
   //     message:error
   //   })
   // }  
-});
+// });
 
 //?HANDLING READ REQUEST (for 1 item)
-exports.getTour = catchAsync(async (req, res,next) => {
+exports.getTour = factory.getOne(Tour , {path : 'reviews'}) //! path--> populate field'ı temsil eder
+// exports.getTour = catchAsync(async (req, res,next) => {
+//  //console.log(req.params);
+//   //! req.params ile object'in key-value pair'larında tüm parametreleri alırız. Belirtilen tüm parametreler url'de gelmelidir. Eger optional olmasını istiyorsak ":id?" şeklinde yazılmalıdır.
 
- //console.log(req.params);
-  //! req.params ile object'in key-value pair'larında tüm parametreleri alırız. Belirtilen tüm parametreler url'de gelmelidir. Eger optional olmasını istiyorsak ":id?" şeklinde yazılmalıdır.
+//   //const id = req.params.id * 1; //! string olan degeri number'a cevirmek icin yaptık.
+//   //const tour = tours.find((el) => el.id === id);
 
-  //const id = req.params.id * 1; //! string olan degeri number'a cevirmek icin yaptık.
-  //const tour = tours.find((el) => el.id === id);
+//   //? burada url'le client'dan gelen id yoksa hata donduk.
+//   //* Alttaki hata kontrol kod blogunu middleware ile sadelestirdik diye kaldırdık.
+//   // // if(id > tours.length) {
+//   // if (!tour) {
+//   //   return res.status(404).json({
+//   //     status: 'fail',
+//   //     message: 'Invalid Id',
+//   //   });
+//   // }
 
-  //? burada url'le client'dan gelen id yoksa hata donduk.
-  //* Alttaki hata kontrol kod blogunu middleware ile sadelestirdik diye kaldırdık.
-  // // if(id > tours.length) {
-  // if (!tour) {
-  //   return res.status(404).json({
-  //     status: 'fail',
-  //     message: 'Invalid Id',
-  //   });
-  // }
+//   // try {
+//    const tour = await Tour.findById(req.params.id).populate('reviews') //! bu method id'ye göre data doner. Promise olarak doner. 
+//    //Tour.findOne({_id:req.params.id}) --> alternatif kullanım findById'nin.
 
-  // try {
-   const tour = await Tour.findById(req.params.id).populate('reviews') //! bu method id'ye göre data doner. Promise olarak doner. 
-   //Tour.findOne({_id:req.params.id}) --> alternatif kullanım findById'nin.
+//    if(!tour){
+//     return next(new AppError('No tour found with that ID', 404)) //! burada return kullanmazsak alttaki response'ı da calıstırır.
+//    }
 
-   if(!tour){
-    return next(new AppError('No tour found with that ID', 404)) //! burada return kullanmazsak alttaki response'ı da calıstırır.
-   }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour: tour,
-      },
-    });
-  // } catch (error) {
-  //   res.status(404).json({
-  //     status: 'fail',
-  //     message: error,
-  //   });
-  // }
+//     res.status(200).json({
+//       status: 'success',
+//       data: {
+//         tour: tour,
+//       },
+//     });
+//   // } catch (error) {
+//   //   res.status(404).json({
+//   //     status: 'fail',
+//   //     message: error,
+//   //   });
+//   // }
   
-});
+// });
 
 //?HANDLING CREATE REQUEST
 exports.createTour = factory.createOne(Tour)
