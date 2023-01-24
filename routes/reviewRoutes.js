@@ -7,8 +7,10 @@ const router = express.Router({mergeParams:true}); // default olarak her router 
 // POST/tour/213asd/reviews 
 // GET /tour/213asd/reviews 
 
-router.route('/').get(reviewController.getAllReviews).post(authController.protect, authController.restrictTo('user'), reviewController.setTourUserIds, reviewController.createReview)
+router.use(authController.protect)
 
-router.route('/:id').get(reviewController.getReview).patch(reviewController.updateReview).delete(reviewController.deleteReview)
+router.route('/').get(reviewController.getAllReviews).post(authController.restrictTo('user'), reviewController.setTourUserIds, reviewController.createReview)
+
+router.route('/:id').get(reviewController.getReview).patch(authController.restrictTo('user' , 'admin'),reviewController.updateReview).delete(authController.restrictTo('user' , 'admin') , reviewController.deleteReview)
 
 module.exports = router;

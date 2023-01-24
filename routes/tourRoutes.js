@@ -31,14 +31,16 @@ router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 
 //! MongoDB aggreagtion pipeline ile grup ve filter ile istatiski bilgileri getireceğimiz routing
 router.route('/tour-stats').get(getTourStats)
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
+router.route('/monthly-plan/:year').get(authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'),getMonthlyPlan);
 
 //? Creating checkBody middleware in tourController and import here
 //? Check if body contains the name and price property
 //? If not, send back 400(bad request) and adding it to the post handler stack
 // router.route('/').get(getAllTours).post(tourController.checkBody , createTour);
-router.route('/').get(authController.protect, getAllTours).post(createTour);
-router.route('/:id').get(getTour).patch(updateTour).delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), deleteTour);
+// router.route('/').get(authController.protect, getAllTours).post(createTour);
+router.route('/').get(getAllTours).post(authController.protect, authController.restrictTo('admin' , 'lead-guide') , createTour);
+
+router.route('/:id').get(getTour).patch(authController.protect, authController.restrictTo('admin', 'lead-guide'),updateTour).delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), deleteTour);
 
 //?----------------------
 // POST /tour/213asd/reviews --> nested route ornegidir. reviews, tour'un child'ıdır. Aradaki de tourID.
