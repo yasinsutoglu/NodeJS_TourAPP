@@ -5,7 +5,8 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp')
-
+const path = require('path') //built-in module. views template icin import ettik.
+ 
 // const fs = require('fs')
 const AppError = require('./utils/appError');//? error middleware icin yazdıgımız class'ı import ettik
 const globalErrorHandler = require('./controllers/errorController')
@@ -17,7 +18,16 @@ const reviewRouter = require('./routes/reviewRoutes')
 
 const app = express(); //! express.js'i aktif ederek uygulamayı express ile yazamaya devam ederiz.
 
-// 1) GLOBAL MIDDLEWARES
+//! USING PUG(Template engine) with EXPRESS --> Pug'ı  baska bir yerde require etmeye gerek yok, cunku express arkaplanda hallediyor hepsini.
+app.set('view engine' , 'pug');
+app.set('views', path.join(__dirname, 'views')); //path ile node otomatik correct path uretir bize.
+
+//* 1) GLOBAL MIDDLEWARES
+//? static file'lara ulasmak icin built-in middleware kullandık. uygulamayı canlıya alınca IP address public klasorunu baz alır ve icindeki html sayfalarını "http://127.0.0.1:3000/overview.html" seklinde acarız. "http://127.0.0.1:3000/img/pin.png" --> public altındaki img klasorunden png dosyası actık.
+//Serving static files
+// app.use(express.static(`${__dirname}/public`))
+app.use(express.static(path.join(__dirname , 'public'))); //!pug'da belirtilen yollar burada tanımladıgımız public dosyasını otomatik algılar. Cunku static file olarak belirledik biz public'i.
+
 //Set Security http headers--> middleware stack'te basta olmalıdır.
 app.use(helmet());
 
@@ -51,9 +61,6 @@ app.use(hpp({
     whitelist:['duration', 'ratingsQuantitiy', 'ratingsAverage', 'maxGroupSize', 'difficulty', 'price']
 }))
 
-//? static file'lara ulasmak icin built-in middleware kullandık. uygulamayı canlıya alınca IP address public klasorunu baz alır ve icindeki html sayfalarını "http://127.0.0.1:3000/overview.html" seklinde acarız. "http://127.0.0.1:3000/img/pin.png" --> public altındaki img klasorunden png dosyası actık.
-//Serving static files
-app.use(express.static(`${__dirname}/public`))
 
 //? KENDI MIDDLEWARE'IMIZI YAZALIM
 //* next parametresini kullanmak client'a donus yapmak icin cok onemlidir. Bu middleware her tur request'e cevap verir.Cunku bu durumda middleware stack'te en ondedir.(crud islemleri icin yazdıgımız fonk.lar da birer middleware)
@@ -198,7 +205,7 @@ app.use((req,res,next)=>{
 // tourRouter.route('/').get(getAllTours).post(createTour)
 // tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour)
 
-app.use('/api/v1/tours', tourRouter); //? burası parent route gibi oldu. tourRouter middleware'i ile uyumlandırdık. Buna "MOUNTING ROUTER" deniyor.
+// app.use('/api/v1/tours', tourRouter); //? burası parent route gibi oldu. tourRouter middleware'i ile uyumlandırdık. Buna "MOUNTING ROUTER" deniyor.
 
 // app.route('/api/v1/tours').get(getAllTours).post(createTour)
 // app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour)
@@ -253,6 +260,17 @@ app.use('/api/v1/tours', tourRouter); //? burası parent route gibi oldu. tourRo
 
 // userRouter.route('/').get(getAllUsers).post(createUser);
 // userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
+
+//! ROUTES
+//? burada pug base template'i render ettirmek icin routing yaptık. render()'ın ikinci parametresi pug'a gonderecegimiz (object formatında) data'dır.
+app.get('/' , (req,res)=>{
+    res.status(200).render('base' , {
+        tour : 'Forest Hiker',
+        user : 'Yasin'
+    })
+})
+
+app.use('/api/v1/tours', tourRouter); 
 
 app.use('/api/v1/users', userRouter);
 
