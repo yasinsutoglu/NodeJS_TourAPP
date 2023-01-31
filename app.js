@@ -6,6 +6,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp')
 const path = require('path') //built-in module. views template icin import ettik.
+const cookieParser = require('cookie-parser')
  
 // const fs = require('fs')
 const AppError = require('./utils/appError');//? error middleware icin yazdıgımız class'ı import ettik
@@ -49,7 +50,8 @@ app.use('/api', limiter) //? "/api" ile baslayan tüm route'ları ilgilendiren r
 
 //? burada express.json() middleware'dir. app.use() icine yazılan fonksiyon'lar middleware stack'e atılır.
 //Body parser, reading data from body into req.body
-app.use(express.json({limit : '10kb'})) 
+app.use(express.json({limit : '10kb'}))
+app.use(cookieParser()) 
 
 //Data Sanitization against NOSQL query injection
 app.use(mongoSanitize());//* malicious nosql injection code'a karsı koruma
@@ -73,7 +75,7 @@ app.use(hpp({
 
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();
-    // console.log(req.headers)
+    console.log(req.cookies)
     next();
 })
 
