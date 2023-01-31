@@ -4,6 +4,9 @@
 /node_modules
 /.pnp
 .pnp.js
+# Parcel related files
+dist/
+.cache/
 
 # testing
 /coverage
