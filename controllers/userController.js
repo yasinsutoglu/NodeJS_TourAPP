@@ -3,17 +3,21 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync')
 const factory = require('./handlerFactory');
 const multer = require('multer');
+const sharp = require('sharp')
 
-const multerStorage = multer.diskStorage({
-  destination: (req,file,cb) =>{
-    cb(null, 'public/img/users');
-  },
-  filename: (req,file,cb)=>{
-    //user-12312basda23sa-1223534234.jpeg
-    const ext = file.mimetype.split('/')[1];
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  }
-});
+//?image-processing'e ihtiyac olmadıgında bunu kullanabiliriz.
+// const multerStorage = multer.diskStorage({
+//   destination: (req,file,cb) =>{
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req,file,cb)=>{
+//     //user-12312basda23sa-1223534234.jpeg
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   }
+// });
+
+const multerStorage = multer.memoryStorage();
 
 //*bu filterın amacı, sadece photo file'ların yuklenmesini saglamak haricindekileri engellemek
 const multerFilter = (req,file,cb)=>{
@@ -29,7 +33,18 @@ const upload = multer({
    fileFilter:multerFilter
  });
 
-exports.uploadUserPhoto = upload.single('photo')
+ exports.uploadUserPhoto = upload.single('photo');
+ 
+ //!image processing ile daha büyük yer kaplayan resmi küçülterek aldık
+exports.resizeUserPhoto = catchAsync(async (req,res,next) =>{
+  if(!req.file) return next();
+
+  req.file.filename=`user-${req.user.id}-${Date.now()}.jpeg`
+
+  await sharp(req.file.buffer).resize(500,500).toFormat('jpeg').jpeg({quality:90}).toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
 
 const filterObj = (obj, ...allowedFields) =>{
   const newObj = {}
@@ -71,7 +86,7 @@ exports.updateMe = catchAsync(async (req,res,next)=>{
   // 2) Filtered out unwanted field names that are not allowed to be updated
   const filteredBody = filterObj(req.body, 'name' , 'email')
   if(req.file) filteredBody.photo = req.file.filename;
-  
+
   // 3) update user document - sadece name ve email'in degistirlmesine müsade etmek istiyoruz
   const updatedUser = await User.findByIdAndUpdate(req.user.id,  filteredBody , {new:true, runValidators:true});
  

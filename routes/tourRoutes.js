@@ -46,7 +46,7 @@ router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances)
 // router.route('/').get(authController.protect, getAllTours).post(createTour);
 router.route('/').get(getAllTours).post(authController.protect, authController.restrictTo('admin' , 'lead-guide') , createTour);
 
-router.route('/:id').get(getTour).patch(authController.protect, authController.restrictTo('admin', 'lead-guide'),updateTour).delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), deleteTour);
+router.route('/:id').get(getTour).patch(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.uploadTourImages,tourController.resizeTourImages ,updateTour).delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), deleteTour);
 
 //?----------------------
 // POST /tour/213asd/reviews --> nested route ornegidir. reviews, tour'un child'ıdır. Aradaki de tourID.
