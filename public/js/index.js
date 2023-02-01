@@ -44,6 +44,7 @@ if(userPasswordForm) userPasswordForm.addEventListener('submit' , async e=>{
     const passwordCurrent = document.getElementById('password-current').value;
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
+    
    await updateSettings({ passwordCurrent, passwordConfirm,password }, 'password');
 
    document.querySelector('.btn--save-password').textContent = 'Save Password';

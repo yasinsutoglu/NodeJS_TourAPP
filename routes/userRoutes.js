@@ -1,9 +1,9 @@
 const express = require('express')
-
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 
 const { getAllUsers, createUser, getUser, updateUser, deleteUser } =  userController;
+
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 //*Protect all routes after this middleware
-router.use(authController.protect); //!this will protect this route only comes after this code
+router.use(authController.protect); //!this will protect all of these routes only comes after this code
 
 // router.patch('/updateMyPassword', authController.protect, authController.updatePassword);
 router.patch('/updateMyPassword', authController.updatePassword);
@@ -22,7 +22,7 @@ router.patch('/updateMyPassword', authController.updatePassword);
 // router.get('/me' , authController.protect , userController.getMe , userController.getUser )
 router.get('/me' , userController.getMe , userController.getUser )
 // router.patch('/updateMe', authController.protect, userController.updateMe)
-router.patch('/updateMe', userController.updateMe);
+router.patch('/updateMe', userController.uploadUserPhoto ,userController.updateMe);
 // router.delete('/deleteMe', authController.protect, userController.deleteMe);
 router.delete('/deleteMe', userController.deleteMe);
 
