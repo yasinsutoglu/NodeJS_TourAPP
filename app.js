@@ -51,6 +51,7 @@ app.use('/api', limiter) //? "/api" ile baslayan tüm route'ları ilgilendiren r
 //? burada express.json() middleware'dir. app.use() icine yazılan fonksiyon'lar middleware stack'e atılır.
 //Body parser, reading data from body into req.body
 app.use(express.json({limit : '10kb'}))
+app.use(express.urlencoded({extended:true, limit:'10kb'}))
 app.use(cookieParser()) 
 
 //Data Sanitization against NOSQL query injection

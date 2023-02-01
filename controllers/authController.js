@@ -114,6 +114,7 @@ exports.protect = catchAsync(async(req,res,next)=>{
 
     //! GRANT ACCESS TO PROTECTED ROUTE
     req.user = currentUser; //* req --> middleware'den middleware'e erisilebilir oldugundan currentUser'ı atadık.
+    res.locals.user = currentUser;
     next()
 })
 
