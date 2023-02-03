@@ -170,39 +170,43 @@ exports.restrictTo = (...roles)=>{
 
 //! RESETING PASSWORD ISSUES
 exports.forgotPassword = catchAsync(async (req,res,next) => {
-    // 1) Get user based on POSTed email
-    const user = await User.findOne({email: req.body.email})
-    if(!user){
-        return next(new AppError('There is no user with email address' , 404))
-    }
-    // 2) Generate the random reset token
-    const resetToken = user.createPasswordResetToken();
-    await user.save({validateBeforeSave : false}); //!all validator'ları devre dısı bıraktı bu durum icin
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with email address', 404));
+  }
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false }); //!all validator'ları devre dısı bıraktı bu durum icin
 
-    //3) send it to users email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forgot your password, please ignore this email!`;
 
-    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forgot your password, please ignore this email!`;
+  //3) send it to users email
+  //* global error handling'de bunu halletmek zor oldugundan trycatch kullandık burada!
+  try {
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    // await sendEmail({
+    //   email: user.email,
+    //   subject: 'your password reset token (valid for 10 min)',
+    //   message,
+    // });
+    await new Email(user, resetURL).sendPasswordReset();
 
-    //* global error handling'de bunu halletmek zor oldugundan trycatch kullandık burada!
-    try {
-        // await Email({
-        //   email: user.email,
-        //   subject: 'your password reset token (valid for 10 min)',
-        //   message,
-        // });
+    res.status(200).json({
+      status: 'success',
+      message: 'token sent to your email!',
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
 
-        res.status(200).json({
-          status: 'success',
-          message: 'token sent to your email!',
-        });
-    } catch (error) {
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save({ validateBeforeSave: false });
-
-        return next(new AppError('There was an error sending the email.Try again later!', 500))
-    }    
+    return next(
+      new AppError('There was an error sending the email.Try again later!', 500)
+    );
+  }
 })
 
 
