@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError')
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 
 const signToken = (id) => {
@@ -46,6 +46,9 @@ exports.signup = catchAsync(async(req,res,next)=>{
         // passwordChangedAt: req.body.passwordChangedAt,
         passwordConfirm: req.body.passwordConfirm
     });
+
+    const url = `${req.protocol}://${req.get('host')}/me`;
+    await new Email(newUser, url).sendWelcome();
 
     //! sign()--> 1.parametre: payload, 2.parametre: secret, 3.parametre: options (e.g. expirationTime)
     // const token = jwt.sign({id:newUser._id}, process.env.JWT_SECRET,{
@@ -183,11 +186,11 @@ exports.forgotPassword = catchAsync(async (req,res,next) => {
 
     //* global error handling'de bunu halletmek zor oldugundan trycatch kullandık burada!
     try {
-        await sendEmail({
-          email: user.email,
-          subject: 'your password reset token (valid for 10 min)',
-          message,
-        });
+        // await Email({
+        //   email: user.email,
+        //   subject: 'your password reset token (valid for 10 min)',
+        //   message,
+        // });
 
         res.status(200).json({
           status: 'success',
