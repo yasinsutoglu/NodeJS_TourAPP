@@ -13,17 +13,21 @@ const signToken = (id) => {
     });
 }
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode,req, res) => {
     const token = signToken(user._id);
 
     //?sending cookie to client
     const cookieOptions = {
         expires: new Date(Date.now()+ process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000), // gün olarak
-        httpOnly:true
+        httpOnly:true,
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
     }
-    if(process.env.NODE_ENV === 'production'){
-        cookieOptions.secure = true;
-    }         
+
+    // if(process.env.NODE_ENV === 'production'){
+    //     cookieOptions.secure = true;
+    // } 
+    
+
     res.cookie('jwt', token, cookieOptions )
 // remove password from respones to client
     user.password = undefined;
@@ -54,7 +58,7 @@ exports.signup = catchAsync(async(req,res,next)=>{
     // const token = jwt.sign({id:newUser._id}, process.env.JWT_SECRET,{
     //     expiresIn : process.env.JWT_EXPIRES_IN
     // })
-    createSendToken(newUser, 201 , res)
+    createSendToken(newUser, 201 , req, res)
 });
 
 
@@ -74,7 +78,7 @@ exports.login = catchAsync( async (req,res,next)=>{
         }
 
     //! 3) If everything is ok, send token to client
-    createSendToken(user, 200, res);
+    createSendToken(user, 200,req, res);
 });
 
 exports.logout = (req,res)=>{
@@ -231,7 +235,7 @@ exports.resetPassword = catchAsync(async(req, res, next) => {
     // 3) Update changedPasswordAt property for the user
     //! burayı userModel kısmında hallettik.
     // 4) log the user in, send JWT
-     createSendToken(user, 200, res);
+     createSendToken(user, 200,req, res);
 });
 
 
@@ -249,5 +253,5 @@ exports.updatePassword = catchAsync(async (req,res,next) => {
     //!User.findByIdAndUpdate ile yapmaya calıssaydık; validator'lar işlemezdi ve pre.save middleware'ler calısmayıp encryption olmazdı.
 
     // 4) Log user in, send JWT
-     createSendToken(user, 200, res);
+     createSendToken(user, 200,req, res);
 })

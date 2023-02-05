@@ -77,3 +77,11 @@ process.on('unhandledRejection', (err) => {
     process.exit(1); //app shut down;
   });
 });
+
+//!heroku kullanılırken sleep'te kapatma durumuna karsı yazıldı.
+process.on('SIGTERM', ()=>{
+  console.log('SIGTERM RECEIVED. Shutting down gracefully!');
+  server.close(()=>{
+    console.log('Process terminated!')
+  })
+})

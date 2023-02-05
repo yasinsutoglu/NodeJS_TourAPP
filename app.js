@@ -22,6 +22,8 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express(); //! express.js'i aktif ederek uygulamayı express ile yazamaya devam ederiz.
 
+app.enable('trust-proxy'); //!heroku secure ayarı ile alakalıdır.
+
 //! USING PUG(Template engine) with EXPRESS --> Pug'ı  baska bir yerde require etmeye gerek yok, cunku express arkaplanda hallediyor hepsini.
 app.set('view engine' , 'pug');
 app.set('views', path.join(__dirname, 'views')); //path ile node otomatik correct path uretir bize.
