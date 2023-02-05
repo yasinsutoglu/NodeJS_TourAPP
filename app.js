@@ -7,6 +7,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp')
 const path = require('path') //built-in module. views template icin import ettik.
 const cookieParser = require('cookie-parser')
+const compression = require('compression')
  
 // const fs = require('fs')
 const AppError = require('./utils/appError');//? error middleware icin yazdıgımız class'ı import ettik
@@ -67,14 +68,17 @@ app.use(hpp({
 }))
 
 
+app.use(compression()) //! image'lar icin gecerli degil zaten onları compressed etmistik. Client'a donen tüm response text'ler icin gecerlidir.
+
 //? KENDI MIDDLEWARE'IMIZI YAZALIM
 //* next parametresini kullanmak client'a donus yapmak icin cok onemlidir. Bu middleware her tur request'e cevap verir.Cunku bu durumda middleware stack'te en ondedir.(crud islemleri icin yazdıgımız fonk.lar da birer middleware)
-//Test Middleware
+
 // app.use((req,res,next)=>{
 //     console.log('hello from the middleware');
 //     next()
 // });
 
+//Test Middleware
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();
     // console.log(req.cookies)
