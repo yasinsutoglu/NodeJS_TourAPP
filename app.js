@@ -10,6 +10,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp')
 const path = require('path') //built-in module. views template icin import ettik.
 const cookieParser = require('cookie-parser')
+const bodyParser = require('body-parser');
 const compression = require('compression')
 const cors = require('cors')
  
@@ -23,6 +24,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes')
 const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
+const bookingController = require('./controller/bookingController');
 
 const app = express(); //! express.js'i aktif ederek uygulamayı express ile yazamaya devam ederiz.
 
@@ -67,6 +69,9 @@ const limiter = rateLimit({
 })
 app.use('/api', limiter) //? "/api" ile baslayan tüm route'ları ilgilendiren request sayısını limitledik 
 
+app.post('/webhook-checkout' , bodyParser.raw({type:'application/json'}) ,bookingController.webhookCheckout) // bunu body parser(json()) oncesine koyduk ki stripe'tan bize response stream olarak geliyor onu kullanabilelim.
+
+//!bodyparser npm package yerine express'in yeni cıkardıgı express.raw() methodu kullanılabilir.
 
 //? burada express.json() middleware'dir. app.use() icine yazılan fonksiyon'lar middleware stack'e atılır.
 //Body parser, reading data from body into req.body
