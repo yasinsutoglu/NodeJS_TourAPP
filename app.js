@@ -1,3 +1,6 @@
+//? SIMPLE REQUESTS: GET, POST
+//? NON-SIMPLE REQUESTS: PUT, PATCH , DELETE --> cookie ve non-standard headers gonderen reqs
+
 const rateLimit = require('express-rate-limit');
 const express = require('express');
 const morgan = require('morgan');
@@ -8,6 +11,7 @@ const hpp = require('hpp')
 const path = require('path') //built-in module. views template icin import ettik.
 const cookieParser = require('cookie-parser')
 const compression = require('compression')
+const cors = require('cors')
  
 // const fs = require('fs')
 const AppError = require('./utils/appError');//? error middleware icin yazdıgımız class'ı import ettik
@@ -29,6 +33,18 @@ app.set('view engine' , 'pug');
 app.set('views', path.join(__dirname, 'views')); //path ile node otomatik correct path uretir bize.
 
 //* 1) GLOBAL MIDDLEWARES
+//Implement CORS
+app.use(cors());
+//Access-Control-Allow-Origin**
+
+//Specific website icin cors yapacak olsak; api.natours.com, frontend- natours.com
+// app.use(cors({
+//     origin: 'https://www.natours.com'
+// }))
+
+app.options('*', cors());
+// app.options('/api/v1/tours/i:id', cors())
+
 //? static file'lara ulasmak icin built-in middleware kullandık. uygulamayı canlıya alınca IP address public klasorunu baz alır ve icindeki html sayfalarını "http://127.0.0.1:3000/overview.html" seklinde acarız. "http://127.0.0.1:3000/img/pin.png" --> public altındaki img klasorunden png dosyası actık.
 //Serving static files
 // app.use(express.static(`${__dirname}/public`))
@@ -275,6 +291,7 @@ app.use((req,res,next)=>{
 //! ROUTES
 app.use('/' , viewRouter);
 app.use('/api/v1/tours', tourRouter);
+// app.use('/api/v1/tours', cors() , tourRouter); --> sadece bunu cors yapmak isteseydik
 app.use('/api/v1/users', userRouter);
 
 // app.route('/api/v1/users').get(getAllUsers).post(createUser)
